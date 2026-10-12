@@ -1,8 +1,11 @@
 // service-worker.js
-// Cache offline do app Mamãe & Bento
+// Estratégia Network-First: sempre busca da rede, cache só como fallback offline.
+// Versionamento automático: mudando a versão, o cache antigo se autodestrói.
 
-const CACHE_NAME = 'mamae-bento-v1';
+const VERSAO = 'v2'; // 👈 Mude isso a cada deploy importante
+const CACHE_NAME = `mamae-bento-${VERSAO}`;
 
+// Arquivos que ficam em cache (fallback offline)
 const ARQUIVOS_CACHE = [
   './',
   './index.html',
@@ -17,57 +20,96 @@ const ARQUIVOS_CACHE = [
   './assets/icones/apple-touch-icon.png',
   './assets/icones/favicon-96x96.png',
   './assets/imagens/mamae-bento-logo.webp',
-  './assets/imagens/lanche.webp',
+  './assets/imagens/remedio.webp',
+  './assets/imagens/chutando.webp',
   './assets/imagens/quarto-acordada.webp',
   './assets/imagens/quarto-dormindo.webp'
 ];
 
-// Instala e faz o cache inicial
+/* =============================================
+   INSTALL — pré-carrega o cache inicial
+   ============================================= */
 self.addEventListener('install', (event) => {
+  console.log('[SW] Instalando versão:', VERSAO);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Cache inicial criado');
-      return cache.addAll(ARQUIVOS_CACHE);
+      return cache.addAll(ARQUIVOS_CACHE).catch((err) => {
+        console.warn('[SW] Falha ao cachear alguns arquivos:', err);
+      });
     })
   );
+  // Força o novo SW a ativar imediatamente (não espera fechar abas)
   self.skipWaiting();
 });
 
-// Ativa e limpa caches antigos
+/* =============================================
+   ACTIVATE — limpa caches antigos
+   ============================================= */
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Ativando versão:', VERSAO);
   event.waitUntil(
-    caches.keys().then((nomes) =>
-      Promise.all(
+    caches.keys().then((nomes) => {
+      return Promise.all(
         nomes
-          .filter((nome) => nome !== CACHE_NAME)
-          .map((nome) => caches.delete(nome))
-      )
-    )
+          .filter((nome) => nome.startsWith('mamae-bento-') && nome !== CACHE_NAME)
+          .map((nome) => {
+            console.log('[SW] Removendo cache antigo:', nome);
+            return caches.delete(nome);
+          })
+      );
+    })
   );
   self.clients.claim();
 });
 
-// Estratégia: cache-first, depois rede
+/* =============================================
+   FETCH — Network-First
+   Sempre tenta rede primeiro. Se falhar, usa cache.
+   ============================================= */
 self.addEventListener('fetch', (event) => {
-  // Ignora requisições do Firebase (sempre online)
-  if (event.request.url.includes('firebase') ||
-      event.request.url.includes('googleapis') ||
-      event.request.url.includes('gstatic')) {
+  // Ignora requisições não-GET
+  if (event.request.method !== 'GET') return;
+
+  // Ignora Firebase, Google APIs e fontes externas
+  const url = event.request.url;
+  if (url.includes('firebase') ||
+      url.includes('googleapis.com') ||
+      url.includes('gstatic.com') ||
+      url.includes('firebaseio.com') ||
+      url.includes('firestore.googleapis.com')) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then((resposta) => {
-      return resposta || fetch(event.request).then((res) => {
-        // Cache dinâmico: guarda o que for novo
-        if (event.request.method === 'GET' && res.status === 200) {
-          const clone = res.clone();
+    fetch(event.request)
+      .then((resposta) => {
+        // Sucesso: atualiza o cache com a versão nova
+        if (resposta && resposta.status === 200 && resposta.type === 'basic') {
+          const clone = resposta.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, clone);
           });
         }
-        return res;
-      });
-    }).catch(() => caches.match('./index.html'))
+        return resposta;
+      })
+      .catch(() => {
+        // Falha de rede: usa o cache
+        return caches.match(event.request).then((resposta) => {
+          if (resposta) return resposta;
+          // Fallback final: devolve o index.html (SPA)
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
+});
+
+/* =============================================
+   MESSAGE — permite o app forçar skipWaiting
+   ============================================= */
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

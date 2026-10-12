@@ -283,6 +283,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
 
     trocarBanner(aba);
 
+    // Rola pro topo (cobre window, html e body — funciona em qualquer navegador)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+    document.body.scrollTo({ top: 0, behavior: 'smooth' });
+
     if (aba === 'chutes') atualizarCronometro();
   });
 });
@@ -735,7 +740,32 @@ atualizarAnel(0, META_CHUTES);
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js')
-      .then(() => console.log('[App] Service Worker registrado'))
+      .then((reg) => {
+        console.log('[App] Service Worker registrado');
+
+        // Detecta quando há uma nova versão esperando pra ativar
+        reg.addEventListener('updatefound', () => {
+          const novoWorker = reg.installing;
+          if (!novoWorker) return;
+
+          novoWorker.addEventListener('statechange', () => {
+            if (novoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('[App] Nova versão detectada — atualizando...');
+              // Avisa o SW pra assumir já
+              novoWorker.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+
+        // Se um SW novo assumir, recarrega a página uma vez
+        let recarregou = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (recarregou) return;
+          recarregou = true;
+          console.log('[App] Recarregando com nova versão...');
+          window.location.reload();
+        });
+      })
       .catch((err) => console.error('[App] Erro SW:', err));
   });
 }
