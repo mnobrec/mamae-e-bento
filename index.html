@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#A8D8EA">
+  <meta name="description" content="Lembrete de remédios, diário e contador de chutes do Bento 💙">
+
+  <title>Mamãe & Bento</title>
+
+  <link rel="icon" href="./favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="icon" type="image/png" sizes="96x96" href="./assets/icones/favicon-96x96.png">
+  <link rel="apple-touch-icon" href="./assets/icones/apple-touch-icon.png">
+
+  <link rel="manifest" href="./manifest.json">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./assets/css/style.css">
+</head>
+<body>
+
+  <div id="particulas"></div>
+
+  <!-- TELA DE LOGIN -->
+  <div id="tela-login" class="tela-login">
+    <img src="./assets/imagens/mamae-bento-logo.webp" alt="Mamãe & Bento">
+    <h1>Mamãe & Bento</h1>
+    <p>Cuidando de você e do Bento, um dia de cada vez. 💙</p>
+    <button id="btn-login" class="btn-google">
+      <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.2 5.2C41.4 34.6 44 29.7 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+      </svg>
+      Entrar com Google
+    </button>
+  </div>
+
+  <!-- MODAL DE CELEBRAÇÃO -->
+  <div id="celebracao" class="celebracao">
+    <div class="celebracao-conteudo">
+      <img src="./assets/imagens/quarto-acordada.webp" alt="Vic sorrindo">
+      <h2>Você cuidou de vocês dois hoje! 💙</h2>
+      <p>Todos os remédios de hoje foram tomados. O Bento agradece. 👶</p>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <!-- APP -->
+  <div id="app" class="app" style="display: none;">
+
+    <!-- BANNER DINÂMICO -->
+    <div id="banner" class="banner">
+      <img id="banner-img" src="./assets/imagens/remedio.webp" alt="">
+      <div class="banner-overlay"></div>
+      <h2 id="banner-titulo" class="banner-titulo">Hora de se cuidar, Vic 💙</h2>
+    </div>
+
+    <!-- HEADER COMPACTO -->
+    <header class="header">
+      <h1>Vic & Bento</h1>
+      <div id="semana" class="semana-badge">Carregando...</div>
+      <p id="frase" class="frase-motivacional"></p>
+    </header>
+
+    <!-- ABA: REMÉDIOS -->
+    <section id="tab-remedios" class="tab-content active">
+      <div class="progresso-wrap">
+        <div class="progresso-label">
+          <span>Progresso de hoje</span>
+          <span id="progresso-texto">0 de 0</span>
+        </div>
+        <div class="progresso-barra">
+          <div id="progresso-fill" class="progresso-fill"></div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2>➕ Adicionar remédio</h2>
+        <form id="form-remedio">
+          <div class="form-group">
+            <label for="nome">Nome do remédio</label>
+            <input type="text" id="nome" placeholder="Ex: Ácido fólico" required>
+          </div>
+          <div class="form-group">
+            <label for="horario">Horário</label>
+            <input type="time" id="horario" required>
+          </div>
+          <div class="form-group">
+            <label>Dias da semana</label>
+            <div class="dias-checkbox" id="dias">
+              <label class="dia-chip"><input type="checkbox" value="Seg"> Seg</label>
+              <label class="dia-chip"><input type="checkbox" value="Ter"> Ter</label>
+              <label class="dia-chip"><input type="checkbox" value="Qua"> Qua</label>
+              <label class="dia-chip"><input type="checkbox" value="Qui"> Qui</label>
+              <label class="dia-chip"><input type="checkbox" value="Sex"> Sex</label>
+              <label class="dia-chip"><input type="checkbox" value="Sáb"> Sáb</label>
+              <label class="dia-chip"><input type="checkbox" value="Dom"> Dom</label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primario">Adicionar à lista</button>
+        </form>
+      </div>
+
+      <div class="lista-header">
+        <h2>💊 Remédios de hoje</h2>
+      </div>
+      <div id="lista-remedios"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ABA: DIÁRIO -->
+    <section id="tab-diario" class="tab-content">
+      <div class="form-card">
+        <h2>📖 Como foi o dia?</h2>
+        <form id="form-diario">
+          <div class="form-group">
+            <label>Humor</label>
+            <div class="humor-selector">
+              <button type="button" class="humor-btn" data-humor="😊">😊</button>
+              <button type="button" class="humor-btn" data-humor="🥰">🥰</button>
+              <button type="button" class="humor-btn" data-humor="😴">😴</button>
+              <button type="button" class="humor-btn" data-humor="😢">😢</button>
+              <button type="button" class="humor-btn" data-humor="🤗">🤗</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="texto-diario">Escreva pra o Bento</label>
+            <textarea id="texto-diario" placeholder="Hoje o Bento chutou muito durante a manhã..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primario">Salvar no diário 💙</button>
+        </form>
+      </div>
+
+      <div class="lista-header">
+        <h2>💫 Memórias</h2>
+      </div>
+      <div id="lista-diario"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ABA: CHUTES -->
+    <section id="tab-chutes" class="tab-content">
+      <div class="chute-contador">
+        <div class="anel-wrap">
+          <svg class="anel-svg" viewBox="0 0 220 220">
+            <circle cx="110" cy="110" r="100" class="anel-fundo"/>
+            <circle id="anel-progresso" cx="110" cy="110" r="100" class="anel-frente"/>
+          </svg>
+          <div class="anel-centro">
+            <div id="chute-numero" class="chute-numero">0</div>
+            <div class="chute-label">chutes</div>
+          </div>
+        </div>
+
+        <div id="cronometro" class="chute-cronometro">00:00</div>
+
+        <button id="btn-chute" class="btn btn-primario btn-grande">
+          💙 Bento chutou!
+        </button>
+
+        <button id="btn-encerrar" class="btn btn-secundario" style="display:none; margin-top:10px;">
+          ✓ Encerrar sessão
+        </button>
+      </div>
+
+      <div class="lista-header">
+        <h2>📅 Últimas sessões</h2>
+      </div>
+      <div id="lista-chutes"><div class="spinner"></div></div>
+    </section>
+
+    <div style="text-align:center; margin-top: 30px;">
+      <button id="btn-sair" class="btn btn-secundario">Sair da conta</button>
+    </div>
+  </div>
+
+  <!-- NAV INFERIOR -->
+  <nav class="nav-inferior">
+    <button class="nav-item ativo" data-aba="remedios">
+      <span class="icone">💊</span>
+      <span>Remédios</span>
+    </button>
+    <button class="nav-item" data-aba="diario">
+      <span class="icone">📖</span>
+      <span>Diário</span>
+    </button>
+    <button class="nav-item" data-aba="chutes">
+      <span class="icone">👶</span>
+      <span>Chutes</span>
+    </button>
+  </nav>
+
+  <script type="module" src="./assets/js/app.js"></script>
+</body>
+</html>
